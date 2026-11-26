@@ -1,16 +1,26 @@
 extends KinematicBody2D
 
+export(float) var speed = 150.0
+var target_position: Vector2 = Vector2.ZERO
+var has_target: bool = false
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
 
-
-# Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	add_to_group("human")
 
+func _process(delta):
+	if has_target:
+		var dir: Vector2 = (target_position - global_position).normalized()
+		var vel: Vector2 = dir * speed
+		
+		vel = move_and_slide(vel)
+		
+		if is_on_wall():
+			has_target = false
+		
+		if position.distance_to(target_position) < 2.0:
+			has_target = false
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func set_target(new_target: Vector2):
+	target_position = new_target
+	has_target = true
