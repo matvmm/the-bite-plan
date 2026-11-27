@@ -10,6 +10,8 @@ var start_position: Vector2 = Vector2.ZERO
 var target_queue: Array = []
 var has_target: bool = false
 
+onready var plan_points: Node2D = get_tree().current_scene.get_node_or_null("plan_points")
+
 
 func _ready():
 	add_to_group("zombie")
@@ -23,6 +25,7 @@ func _physics_process(delta):
 	else:
 		has_target = false
 		print("I finished :) .")
+		reset_target_queue()
 		return
 	
 	var dir: Vector2 = (target_position - global_position).normalized()
@@ -52,6 +55,7 @@ func reset_target_queue():
 	if get_tree().get_nodes_in_group("plan point").size() > 0:
 		for i in get_tree().get_nodes_in_group("plan point"):
 			i.queue_free()
+	if plan_points: plan_points.remove_lines()
 	current_queue_num = 0
 	global_position = start_position
 
@@ -61,8 +65,12 @@ func start_movement():
 func add_target(new_target: Vector2):
 	target_queue.append(new_target)
 	
-	var plan_point: Sprite = load(planPointScenePath).instance()
-	get_tree().current_scene.add_child(plan_point)
-	plan_point.create_point(new_target)
+	if plan_points:
+		var plan_point: Sprite = load(planPointScenePath).instance()
+		plan_points.add_child(plan_point)
+		var linearray: Array = target_queue
+		linearray.insert(0, start_position)
+		plan_points.add_lines(linearray)
+		plan_point.create_point(new_target)
 	
 	print("Added new target point: " + str(new_target))
