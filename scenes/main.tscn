@@ -50,45 +50,52 @@ zoom = Vector2( 0.6, 0.6 )
 [node name="plan_points" type="Node2D" parent="."]
 script = ExtResource( 4 )
 
-[node name="Line2D" type="Line2D" parent="plan_points"]
-points = PoolVector2Array( 4, -91 )
-width = 2.0
-default_color = Color( 1, 0, 0, 1 )
-
 [node name="YSort" type="YSort" parent="."]
 
 [node name="base_zombie" parent="YSort" instance=ExtResource( 1 )]
 position = Vector2( -87, -52 )
 
+[node name="base_zombie2" parent="YSort" instance=ExtResource( 1 )]
+position = Vector2( -77, -52 )
+
+[node name="base_zombie3" parent="YSort" instance=ExtResource( 1 )]
+position = Vector2( -67, -52 )
+
+[node name="base_zombie4" parent="YSort" instance=ExtResource( 1 )]
+position = Vector2( -57, -52 )
+
+[node name="base_zombie5" parent="YSort" instance=ExtResource( 1 )]
+position = Vector2( -47, -52 )
+
+[node name="base_zombie6" parent="YSort" instance=ExtResource( 1 )]
+position = Vector2( -37, -52 )
+
+[node name="base_zombie7" parent="YSort" instance=ExtResource( 1 )]
+position = Vector2( -27, -52 )
+
+[node name="base_zombie8" parent="YSort" instance=ExtResource( 1 )]
+position = Vector2( -17, -52 )
+
 [node name="base_human" parent="YSort" instance=ExtResource( 2 )]
-position = Vector2( 77, -9 )
-speed = 10.0
+position = Vector2( 154, 110 )
 
 [node name="reactionArea" parent="YSort/base_human" instance=ExtResource( 3 )]
 
-[node name="targetPositionVisual" parent="YSort/base_human/reactionArea" index="1"]
-position = Vector2( 40, -4 )
+[node name="1" type="Node2D" parent="YSort/base_human/reactionArea/targetPositionVisual" index="0"]
+position = Vector2( 34, -21 )
 
-[node name="base_human2" parent="YSort" instance=ExtResource( 2 )]
-position = Vector2( -19, 25 )
+[node name="2" type="Node2D" parent="YSort/base_human/reactionArea/targetPositionVisual" index="1"]
+position = Vector2( 40, 20 )
 
-[node name="reactionArea" parent="YSort/base_human2" instance=ExtResource( 3 )]
+[node name="3" type="Node2D" parent="YSort/base_human/reactionArea/targetPositionVisual" index="2"]
+position = Vector2( 113, 29 )
 
-[node name="targetPositionVisual" parent="YSort/base_human2/reactionArea" index="1"]
-position = Vector2( 42, -22 )
-
-[node name="base_human3" parent="YSort" instance=ExtResource( 2 )]
-position = Vector2( -35, -48 )
-
-[node name="reactionArea" parent="YSort/base_human3" instance=ExtResource( 3 )]
-
-[node name="targetPositionVisual" parent="YSort/base_human3/reactionArea" index="1"]
-position = Vector2( 67, 40 )
+[node name="4" type="Node2D" parent="YSort/base_human/reactionArea/targetPositionVisual" index="3"]
+position = Vector2( 112, -76 )
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="Button" type="Button" parent="CanvasLayer"]
-visible = false
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
@@ -100,5 +107,3 @@ margin_bottom = -8.0
 text = "START"
 
 [editable path="YSort/base_human/reactionArea"]
-[editable path="YSort/base_human2/reactionArea"]
-[editable path="YSort/base_human3/reactionArea"]
