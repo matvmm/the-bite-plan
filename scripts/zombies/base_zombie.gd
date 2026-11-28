@@ -21,12 +21,11 @@ func _ready():
 	start_position = global_position
 
 func _physics_process(delta):
-	if !has_target || !target_queue.size() > 0: return
+	if !has_target || target_queue.size() == 0: return
 	
 	if target_queue.size()-1 >= current_queue_num:
 		target_position = target_queue[current_queue_num]
 	else:
-		has_target = false
 		print("I finished :) .")
 		reset_movement()
 		return
@@ -39,8 +38,7 @@ func _physics_process(delta):
 	sprite.flip_h = true if vel.x < 0.0 else false
 	
 	if is_on_wall():
-		has_target = false
-		reset_target_queue()
+		reset_movement()
 		print("Zombie " + self.name + "says: 'I DONT KNOW HOW TO WALK AROUND THE WALL!!!!!!! >:('.")
 		return
 	
@@ -50,26 +48,31 @@ func _physics_process(delta):
 		current_queue_num += 1
 		# has_target = false
 
-#func _unhandled_input(event):
-#	if event.is_action_pressed("ui_accept"):
-#		start_movement()
-#	if !selected: return
-#	if event.is_action_pressed("SET_POINT"):
-#		add_target(get_global_mouse_position())
-
 func _unhandled_input(event):
-	if event.is_action_pressed("ui_accept"):
+	if event.is_action("ui_accept"):
 		start_movement()
 		return
-	if !selected: return
-	if not event.is_action_pressed("SET_POINT"): return
 	
-	var hits = get_world_2d().direct_space_state.intersect_point(get_global_mouse_position())
-	for i in hits:
-		if i.collider.is_in_group("zombie"):
+	if !event is InputEventMouseButton || !event.pressed: return
+	
+	if sprite.get_rect().has_point(sprite.to_local(get_global_mouse_position())):
+		if event.is_action("SET_POINT"):
+			get_tree().set_input_as_handled()
+			if selected: unselect()
+			else: select()
 			return
 	
-	add_target(get_global_mouse_position())
+	if selected && event.is_action("SET_POINT"):
+		for i in get_world_2d().direct_space_state.intersect_point(get_global_mouse_position()):
+			if i.collider.is_in_group("zombie"): return
+		
+		for point in get_tree().get_nodes_in_group("plan point"):
+			var local_pos = point.to_local(get_global_mouse_position())
+			if point.get_rect().has_point(local_pos):
+				if remove_target(point.global_position): return
+		
+		add_target(get_global_mouse_position())
+		get_tree().set_input_as_handled()
 
 func reset_movement():
 	has_target = false
@@ -82,12 +85,13 @@ func reset_target_queue():
 	if get_tree().get_nodes_in_group("plan point").size() > 0:
 		for i in get_tree().get_nodes_in_group("plan point"):
 			i.queue_free()
-	if plan_points: plan_points.remove_lines()
+	if plan_points: plan_points.remove_line(get_instance_id())
 	current_queue_num = 0
 	global_position = start_position
 
 func start_movement():
 	if !target_queue.size() > 0: return
+	unselect()
 	has_target = true
 
 func add_target(new_target: Vector2):
@@ -96,34 +100,42 @@ func add_target(new_target: Vector2):
 	if plan_points:
 		var plan_point: Sprite = load(planPointScenePath).instance()
 		plan_points.add_child(plan_point)
-		var linearray: Array = target_queue
+		var linearray: Array = target_queue.duplicate()
 		linearray.insert(0, start_position)
-		plan_points.add_lines(linearray)
-		plan_point.create_point(new_target)
+		plan_points.update_line(get_instance_id(), linearray)
+		plan_point.create_point(new_target, get_instance_id())
 	
 	print("Added new target point: " + str(new_target))
 
 func remove_target(target: Vector2):
-	target_queue.remove(target_queue.find(target))
+	target_queue.erase(target)
+	var s: bool = false
 	for i in get_tree().get_nodes_in_group("plan point"):
-		if i.global_position == target: i.queue_free()
-	plan_points.line.points.remove(plan_points.line.points.find(target))
+		if i.global_position == target:
+			if i.get_meta("zombie_id") == get_instance_id():
+				i.remove_point()
+				s = true
+#	if plan_points && plan_points.line: plan_points.line.points.erase(target)
+	if plan_points:
+		if target_queue.size() > 0:
+			var linearray: Array = target_queue.duplicate()
+			linearray.insert(0, start_position)
+			plan_points.update_line(get_instance_id(), linearray)
+		else:
+			plan_points.remove_line(get_instance_id())
 	
 	print("Removed target point: " + str(target))
-
-func _input_event(viewport, event, shape_idx):
-	if event is InputEventMouseButton and event.pressed and event.is_action("SET_POINT"):
-		get_tree().set_input_as_handled()
-		if selected: unselect()
-		else: select()
+	return s
 
 func select():
 	selected = true
+	if plan_points: plan_points.enable_select_mode(get_instance_id())
 	sprite.modulate.b = 0.5
 	for i in get_tree().get_nodes_in_group("zombie"):
 		if i != self: i.unselect()
 
 func unselect():
 	selected = false
+	if plan_points: plan_points.disable_select_mode(get_instance_id())
 	sprite.modulate.b = 1.0
 #	if target_queue.size() > 0: remove_target(target_queue[target_queue.size()-1])
